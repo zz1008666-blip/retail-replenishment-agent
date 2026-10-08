@@ -1,0 +1,7 @@
+# 统一换行为 LF，避免 Windows/CI 差异
+* text=auto
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
