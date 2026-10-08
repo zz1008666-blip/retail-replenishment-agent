@@ -27,3 +27,6 @@ Thumbs.db
 # 编辑器
 .idea/
 .vscode/
+
+# 运行时工作区（每次 run 的隔离调查目录）
+workspaces/
