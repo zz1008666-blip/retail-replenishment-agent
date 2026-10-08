@@ -1,8 +1,9 @@
 /**
- * CLI 入口：rra eval / rra run
+ * CLI 入口：rra eval / rra run / rra serve
  */
 import { createApp } from './app';
 import { runGate } from './eval/gate';
+import { cmdServe } from './client/serve';
 import type { Principal } from './acl';
 
 function pad(s: string, n: number): string {
@@ -78,7 +79,13 @@ async function main(): Promise<void> {
   const cmd = process.argv[2] ?? 'eval';
   if (cmd === 'eval') return cmdEval();
   if (cmd === 'run') return cmdRun();
-  console.log('用法：node dist/src/cli.js <eval|run>');
+  if (cmd === 'serve') {
+    const rawPort = process.argv[3];
+    const port = rawPort ? Number(rawPort) : 4610;
+    await cmdServe(Number.isFinite(port) && port > 0 ? port : 4610);
+    return;
+  }
+  console.log('用法：node dist/src/cli.js <eval|run|serve [端口]>');
 }
 
 main().catch((e) => {

@@ -8,7 +8,29 @@
 2. **有边界**：AI 有建议权，人保留审批权与参数校准权；高风险动作不能越过人工授权。
 3. **可复盘**：决策过程用 Trace 记录，质量用故障样例 + 回归门禁守住，改动不能偷偷变差。
 
-## 2. 数据契约（Tool Hub 基座）
+## 2. 四层进程架构（MiniClaw 映射）
+
+这是项目最外层的骨架，决定「哪些代码在哪个进程、谁能碰什么」：
+
+| 层 | 对应 MiniClaw | 本项目的载体 | 进程内职责 | 明确的「不做」 |
+|---|---|---|---|---|
+| **Client** | 客户端 | CLI（eval/run/serve）+ 静态 Web 面板 | 交互与展示 | 不碰数据，不碰决策 |
+| **Backend** | 后端 | HTTP（`node:http`）+ SQLite 真相源 + Runner 管理 | 落账、取数、审批 | **不解读 prompt、不跑工具** |
+| **Pi Runner** | Pi Runner | `child_process.fork` 子进程 + stdio JSON-RPC | agent-loop 跑六阶段 Turn | **不连数据库**，取数走 tool_call IPC |
+| **Workspace** | Workspace | 每次 run 一个隔离目录 | 调查产物落盘隔离 | 不做进程边界外的事 |
+
+### 为什么这样分层（代价与收益）
+
+- **进程隔离换安全**：决策代码（Runner）即使被 prompt 注入诱导，也**没有数据库句柄**——取数只能通过带 ACL 的 `tool_call` 回 Backend 请求，Backend 只认授权、不看 prompt。这是把「别越权」从提示词约束升级为进程边界。
+- **真相源唯一**：只有 Backend 写 SQLite，Runner/Client 都是无状态或仅持会话态，崩溃/重启不会污染账本。
+- **可并行可扩**：Runner 是子进程，天然多实例；Backend 单真相源；Workspace 每 run 隔离。
+- **代价**：多一层 IPC 往返（`tool_call` 取数），补货是低频任务，这个延迟无感；换来的是边界清晰。
+
+### stdio JSON-RPC = MCP 的同构原型
+
+`Backend ↔ Runner` 之间用「换行分隔 JSON」承载三类消息：`request`（带 id，期望响应）、`response`（带 id 回填）、`notification`（无 id，单向）。这正是 **MCP（Model Context Protocol）的基座形态**——Runner 想取数，发一个 `tool_call` request 给 Backend，Backend 按 ACL 授权后回 `response`；未经授权的取数被拒（fail-closed）。这让学生在简历里可以说「实现了 MCP 风格的工具调用协议」，而不只是「引了个 npm 包」。
+
+## 3. 数据契约（Tool Hub 基座）
 
 多系统口径不一是补货判断失真的根源。所有源系统数据先归一化到一份 JSON Schema（`InventorySnapshot`），再进入处置：
 
@@ -24,7 +46,7 @@
 
 **为什么注册成 MCP Tool 而不是直连数据库**：直连绕过授权层。注册成工具后，取数走 Tool Registry 的三层检查（ACL 授权 → Session 范围 → 执行），fail-closed（默认拒绝），AI 只能调用它被允许的工具。
 
-## 3. Workflow Runtime（六阶段可恢复 Turn）
+## 4. Workflow Runtime（六阶段可恢复 Turn）
 
 决策链拆成六个不可省略的问题：
 
@@ -45,7 +67,7 @@
 
 **同 SKU 串行**：Session Scheduler 为每个 `skuId` 建一条 lane，同 SKU 的任务串行推进（防并发改写同一 SKU 状态打架），异 SKU 并行。
 
-## 4. 定时巡检调度器（Cron 双层模型）
+## 5. 定时巡检调度器（Cron 双层模型）
 
 | 层 | 表 | 职责 |
 |---|---|---|
@@ -56,7 +78,7 @@
 - **幂等物化**：`occurrence_key = taskId@runAt` 唯一约束 + `INSERT OR IGNORE`，重复物化只生效一次。
 - **重启语义**：周期任务错过的轮次「missed 不补跑」——缺货是持续状态，下一轮仍能抓到，补跑 N 轮会形成追债级联；一次性任务错过就永远错过，必须「必达」backfill（case-14 / case-15）。
 
-## 5. ACL 权限矩阵（两维正交）
+## 6. ACL 权限矩阵（两维正交）
 
 权限分两个正交维度，判断函数里**绝不读 role 字段**：
 
@@ -67,13 +89,13 @@
 
 **admin 无旁路**：admin 只持有系统能力，对具体 SKU 资源的访问仍走资源归属检查。授权是资源层硬边界，不放进提示词（提示词可被注入操纵）。
 
-## 6. Case Memory（CAS + FTS5）
+## 7. Case Memory（CAS + FTS5）
 
 案例三段式 Schema（`cause` 原因 / `action` 动作 / `outcome` 结果）。并发写用 `revision` compare-and-set：`UPDATE ... WHERE id=? AND revision=?`，不匹配抛 `CaseConflictError`（等价 409），显式暴露冲突而非静默覆盖。
 
 召回用 FTS5 trigram + bm25：案例召回是**精确匹配**（SKU 编号、关键词），不是语义相似，所以用 FTS5 而非向量 RAG。短关键词（<3 字符，如中文两字词）降级 LIKE。
 
-## 7. Trace Eval + 回归门禁
+## 8. Trace Eval + 回归门禁
 
 评测看 Trace 不看最终输出（防「过程错、结果碰对」）。三项断言：
 
@@ -83,10 +105,11 @@
 
 六类故障样例覆盖「数据 → 规则 → 流程 → 基建」四个失败面，回归门禁对照三项指标，任一低于基线即阻断发布。
 
-## 8. 关键取舍
+## 9. 关键取舍
 
 - **确定性内核 > 真模型**：离线可复现优先，LLM 端口可插拔，二者不冲突。
 - **精确召回 > 语义召回**：案例复用要的是「可复用」而非「语义相近」。
 - **串行 > 吞吐**：同 SKU 串行换正确性，补货是低频任务，串行不是瓶颈。
 - **约束下沉数据库**：业务不变量用 CHECK/UNIQUE 编码在写入层，应用代码漏判/绕过不了。
 - **宁可卡住，不可重复**：副作用动作只认幂等键，不靠应用层判断重试。
+- **进程边界 > 提示词约束**：把「不越权」从 prompt 伦理升级为「Runner 无 DB 句柄」的进程隔离（详见 §2）。
