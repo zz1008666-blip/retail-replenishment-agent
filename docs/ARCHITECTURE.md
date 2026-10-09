@@ -28,7 +28,7 @@
 
 ### stdio JSON-RPC = MCP 的同构原型
 
-`Backend ↔ Runner` 之间用「换行分隔 JSON」承载三类消息：`request`（带 id，期望响应）、`response`（带 id 回填）、`notification`（无 id，单向）。这正是 **MCP（Model Context Protocol）的基座形态**——Runner 想取数，发一个 `tool_call` request 给 Backend，Backend 按 ACL 授权后回 `response`；未经授权的取数被拒（fail-closed）。这让学生在简历里可以说「实现了 MCP 风格的工具调用协议」，而不只是「引了个 npm 包」。
+`Backend ↔ Runner` 之间用「换行分隔 JSON」承载三类消息：`request`（带 id，期望响应）、`response`（带 id 回填）、`notification`（无 id，单向）。这与 **MCP（Model Context Protocol）** 的基座形态同构——Runner 想取数，发一个 `tool_call` request 给 Backend，Backend 按 ACL 授权后回 `response`；未经授权的取数被拒（fail-closed）。协议层由本项目基于 stdio 独立实现，无第三方 MCP 依赖。
 
 ## 3. 数据契约（Tool Hub 基座）
 
