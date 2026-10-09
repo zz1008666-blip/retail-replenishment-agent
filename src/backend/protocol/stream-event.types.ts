@@ -1,6 +1,5 @@
 /**
- * 规范 StreamEvent 类型定义（照搬自 MiniClaw 的
- * `container/agent-runner/src/stream-event.types.ts`，并按零售补货场景裁剪）。
+ * 规范 StreamEvent 类型定义（参考 MiniClaw 协议层设计，并按零售补货场景裁剪）。
  *
  * MiniClaw 把「流式事件」当作单一事实来源（single source of truth），
  * 同一份类型文件被编译进 Backend / Agent Runner / Web 三端，保证三方

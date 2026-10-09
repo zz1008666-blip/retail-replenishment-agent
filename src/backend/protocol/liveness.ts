@@ -1,5 +1,5 @@
 /**
- * Runner 存活探针（照搬自 MiniClaw `src/runner-liveness.ts`）。
+ * Runner 存活探针（参考 MiniClaw 协议层设计）。
  *
  * 解释它修复的一个真实竞态：历史上「空闲回收计时器」与「外层看门狗」默认
  * 都是 30 分钟；stdout 看门狗在宿主投影完输出之前就重置，而空闲计时器在其

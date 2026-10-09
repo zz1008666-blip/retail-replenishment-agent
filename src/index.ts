@@ -91,7 +91,7 @@ export type { Workspace } from './workspace';
 export { WEB_PANEL_HTML } from './client/web-panel';
 export { cmdServe } from './client/serve';
 
-// 协议层（照搬 MiniClaw 的纯协议/类型文件，场景化裁剪）
+// 协议层（参考 MiniClaw 协议层设计，场景化裁剪）
 export type {
   StreamEvent,
   StreamEventType,

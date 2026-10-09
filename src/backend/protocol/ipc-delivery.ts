@@ -1,5 +1,5 @@
 /**
- * IPC 投递与回执（照搬自 MiniClaw `container/agent-runner/src/ipc-delivery.ts`，
+ * IPC 投递与回执（参考 MiniClaw 协议层设计，
  * 载体从「文件队列」适配为「stdio 消息队列 + 工作区落盘」）。
  *
  * 保留 MiniClaw 的三个关键机制：

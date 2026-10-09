@@ -2,7 +2,7 @@
 
 > 面向电商库存补货场景的**决策型 Agent**，**基于 MiniClaw 的四层架构（Client / Backend / Pi Runner / Workspace）**：以「定时巡检 → 异常调查 → 审批执行 → 案例复用」的完整闭环替代人工经验补货，把缺货与积压风险前置为**可追溯的决策证据**，人工只保留审批权与参数校准权。
 
-- **照搬 MiniClaw 协议层 + 载体适配**：5 个纯协议/类型文件源码照搬，Docker 容器 runner 改编为 `child_process.fork` + stdio JSON-RPC，`npm install` 零 native 编译
+- **协议层移植 MiniClaw 设计**：事件流类型 / 权限归一化 / IPC 去重有序回执 / 进程存活检测 5 个纯协议文件按场景裁剪落地，Docker 容器 runner 载体适配为 `child_process.fork` + stdio JSON-RPC，`npm install` 零 native 编译
 - **离线确定性内核**：20 条本地 case 可离线 100% 复现，无 API Key、无随机性
 - **可插拔 LLM 端口**：默认确定性内核，配置凭据即可切换到 OpenAI 兼容模型
 - **单机可跑**：`npm run eval` 一键跑完 20 条 case + 回归门禁，`npm run serve` 起 Web 面板
@@ -78,7 +78,7 @@ npm run eval
 # 跑一个进程内演示巡检（生成 data/app.db）
 npm run run
 
-# 起 Web 面试演示面板（默认 4610 端口，http://localhost:4610）
+# 起 Web 演示面板（默认 4610 端口，http://localhost:4610）
 npm run serve
 # 换端口： npm run serve -- 8080
 ```
@@ -116,7 +116,7 @@ npm run serve
 src/
 ├── client/             # Client 客户端层：Web 面板 + serve 命令
 ├── backend/            # Backend 后端层：真相源 + HTTP + Runner 管理
-│   └── protocol/       #   —— 照搬 MiniClaw 的 5 个纯协议/类型文件
+│   └── protocol/       #   —— 移植 MiniClaw 协议层设计（事件/权限/IPC/存活）
 │       ├── stream-event.types.ts   # 流式事件类型（24 种 StreamEventType）
 │       ├── permissions.ts          # 平台级系统权限（角色 → 默认权限）
 │       ├── ipc-send-dedup.ts       # IPC 发送去重（幂等投递）
@@ -146,8 +146,6 @@ test/
 ## 更多文档
 
 - [架构与设计取舍](docs/ARCHITECTURE.md)
-- [MiniClaw 源码照搬与载体适配映射](docs/MINICLAW-MIGRATION-MAP.md)
-- [面试问答速查](docs/INTERVIEW-QA.md)
 
 ## License
 
