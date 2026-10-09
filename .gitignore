@@ -30,6 +30,3 @@ Thumbs.db
 
 # 运行时工作区（每次 run 的隔离调查目录）
 workspaces/
-
-# CI 配置暂不上传（当前 GitHub Token 缺 workflow 权限；获得后取消此行并提交该文件）
-.github/workflows/ci.yml
