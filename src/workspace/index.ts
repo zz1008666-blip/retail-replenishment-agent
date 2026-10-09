@@ -1,11 +1,11 @@
 /**
  * Workspace 层：每次调查的隔离目录。
  *
- * 对应 MiniClaw 的 Workspace 文件隔离——每个巡检 run 一个独立目录，
+ * 对应分层架构的 Workspace 文件隔离——每个巡检 run 一个独立目录，
  * Runner 子进程只能在自己的工作区里读写，不共享全局状态，避免不同租户/
  * 不同 SKU 的调查交叉污染。
  *
- * 隔离边界（本项目载体适配后）：
+ * 隔离边界：
  *   - 目录隔离：每个 runId 一个 <root>/<runId> 目录，证据/trace/决策各就各位；
  *   - 路径守卫：任何写出都强制 resolve 后确认落在工作区根内，防目录穿越；
  *   - 配额：Runner 落盘仅限 evidence / trace / decision / input，不暴露 DB。

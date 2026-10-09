@@ -52,7 +52,7 @@ export { CASES, runCase } from './eval/cases';
 export { runGate, BASELINE } from './eval/gate';
 
 // ============================================================================
-// 四层架构（MiniClaw Client / Backend / Pi Runner / Workspace 映射）
+// 四层架构（Client / Backend / Runner / Workspace）
 // ============================================================================
 
 // Backend 层：真相源 + HTTP + Runner 管理
@@ -91,7 +91,7 @@ export type { Workspace } from './workspace';
 export { WEB_PANEL_HTML } from './client/web-panel';
 export { cmdServe } from './client/serve';
 
-// 协议层（参考 MiniClaw 协议层设计，场景化裁剪）
+// 协议层（参考事件驱动协议设计，场景化裁剪）
 export type {
   StreamEvent,
   StreamEventType,

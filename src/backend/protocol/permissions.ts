@@ -1,13 +1,13 @@
 /**
- * 平台级系统能力权限（参考 MiniClaw 协议层设计，替换为补货平台语义）。
+ * 平台级系统能力权限（参考事件驱动协议设计，替换为补货平台语义）。
  *
- * 注意与 `src/acl/index.ts` 的分工（两维正交，MiniClaw 同款思想）：
+ * 注意与 `src/acl/index.ts` 的分工（两维正交，同源于协议层设计）：
  *   - 这一维 = 系统能力（角色）：谁能做平台级管理（配规则、管用户、看审计、管计费）。
  *     `hasPermission` 里 `role === 'admin'` 对系统能力放行 —— 这是 admin 的「系统能力」。
  *   - 另一维 = 资源归属（授权）：谁能碰某个 SKU / 工作区。
  *     见 `src/acl/index.ts` 的 `Acl.authorize()`，它绝不读 `principal.role`（无 admin 旁路）。
  *
- * MiniClaw 原文中的 `Permission` 就是系统能力清单，这里为避免与资源动作
+ * 协议层原文中的 `Permission` 就是系统能力清单，这里为避免与资源动作
  * `acl.Permission`（read/advise/execute…）重名，改名为 `SystemPermission`。
  */
 

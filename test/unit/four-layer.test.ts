@@ -1,5 +1,5 @@
 /**
- * 四层架构（Client / Backend / Pi Runner / Workspace）单元 + 集成测试。
+ * 四层架构（Client / Backend / Runner / Workspace）单元 + 集成测试。
  *
  * 覆盖：
  *   - Runner stdio JSON-RPC 协议（encode/decode 往返）

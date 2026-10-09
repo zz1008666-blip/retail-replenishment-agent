@@ -1,14 +1,14 @@
 /**
- * 规范 StreamEvent 类型定义（参考 MiniClaw 协议层设计，并按零售补货场景裁剪）。
+ * 规范 StreamEvent 类型定义（参考事件驱动协议设计，并按零售补货场景裁剪）。
  *
- * MiniClaw 把「流式事件」当作单一事实来源（single source of truth），
+ * 事件驱动协议把「流式事件」当作单一事实来源（single source of truth），
  * 同一份类型文件被编译进 Backend / Agent Runner / Web 三端，保证三方
  * 对同一份 trace 的理解一致。本项目沿用这一思路：
  *   - Backend（真相源）记录 trace 并对外提供
  *   - Runner（fork 子进程）产生事件
  *   - Client（CLI / Web 面板）消费渲染
  *
- * 类型面完整保留 MiniClaw 的 24 种事件（用于协议对齐与可插拔扩展），
+ * 类型面完整保留协议层的 24 种事件（用于协议对齐与可插拔扩展），
  * 而零售补货场景的确定性内核实际只用到其中少量（见 src/runner/protocol.ts）。
  */
 
@@ -89,7 +89,7 @@ export interface WorkflowRunSnapshot {
 }
 
 /**
- * 零售场景的证据覆盖审计（对 MiniClaw ClaudeContextAudit 的场景化裁剪）。
+ * 零售场景的证据覆盖审计（对审计上下文记录的场景化裁剪）。
  * 复用同一「审计」语义：决策前核对关键字段是否齐备、取证是否完整。
  */
 export interface EvidenceCoverageAudit {
@@ -102,7 +102,7 @@ export interface EvidenceCoverageAudit {
 
 /**
  * 规范 StreamEvent：Runner 产生的每一条轨迹事件。
- * 字段面与 MiniClaw 保持一致（agentScope / turnId / toolName / permissionDenied …），
+ * 字段面与协议层保持一致（agentScope / turnId / toolName / permissionDenied …），
  * 未用到的字段保留以维持跨端协议稳定。
  */
 export interface StreamEvent {
@@ -157,7 +157,7 @@ export interface StreamEvent {
   isTeammate?: boolean;
   toolInput?: Record<string, unknown>;
   rawEvent?: Record<string, unknown>;
-  /** 零售场景：决策证据覆盖审计（替代 MiniClaw 的 Claude 上下文审计） */
+  /** 零售场景：决策证据覆盖审计（替代审计上下文记录） */
   evidenceCoverage?: EvidenceCoverageAudit;
   todos?: Array<{
     id: string;

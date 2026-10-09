@@ -5,7 +5,7 @@
  *   - 触发：POST /api/v1/inspect（由 Backend fork Runner 完成决策）
  *   - 展示：GET /api/v1/runs、/api/v1/decision/:id、/api/v1/trace/:id
  *
- * 对应 MiniClaw 的 Web 前端，但裁剪为内联单页（不引入打包器）。
+ * 对应分层架构的 Web 前端，但裁剪为内联单页（不引入打包器）。
  */
 
 export const WEB_PANEL_HTML = `<!DOCTYPE html>
@@ -58,7 +58,7 @@ export const WEB_PANEL_HTML = `<!DOCTYPE html>
 <body>
 <header>
   <h1>零售库存补货决策智能体</h1>
-  <p>Client → Backend → Pi Runner → Workspace 四层架构 · 单机离线 · 确定性内核</p>
+  <p>Client → Backend → Runner → Workspace 四层架构 · 单机离线 · 确定性内核</p>
 </header>
 <main>
   <div class="card">

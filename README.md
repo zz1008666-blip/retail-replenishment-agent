@@ -1,8 +1,8 @@
 # 零售库存补货决策智能体
 
-> 面向电商库存补货场景的**决策型 Agent**，**基于 MiniClaw 的四层架构（Client / Backend / Pi Runner / Workspace）**：以「定时巡检 → 异常调查 → 审批执行 → 案例复用」的完整闭环替代人工经验补货，把缺货与积压风险前置为**可追溯的决策证据**，人工只保留审批权与参数校准权。
+> 面向电商库存补货场景的**决策型 Agent**，**基于事件驱动协议的四层架构（Client / Backend / Runner / Workspace）**：以「定时巡检 → 异常调查 → 审批执行 → 案例复用」的完整闭环替代人工经验补货，把缺货与积压风险前置为**可追溯的决策证据**，人工只保留审批权与参数校准权。
 
-- **协议层移植 MiniClaw 设计**：事件流类型 / 权限归一化 / IPC 去重有序回执 / 进程存活检测 5 个纯协议文件按场景裁剪落地，Docker 容器 runner 载体适配为 `child_process.fork` + stdio JSON-RPC，`npm install` 零 native 编译
+- **协议层独立设计**：事件流类型 / 权限归一化 / IPC 去重有序回执 / 进程存活检测 5 个纯协议文件按场景裁剪落地，Runner 子进程以 `child_process.fork` + stdio JSON-RPC 承载，`npm install` 零 native 编译
 - **离线确定性内核**：20 条本地 case 可离线 100% 复现，无 API Key、无随机性
 - **可插拔 LLM 端口**：默认确定性内核，配置凭据即可切换到 OpenAI 兼容模型
 - **单机可跑**：`npm run eval` 一键跑完 20 条 case + 回归门禁，`npm run serve` 起 Web 面板
@@ -13,7 +13,7 @@
 
 | 模块 | 解决什么 | 关键机制 |
 |---|---|---|
-| **四层架构** | 决策进程与真相源解耦、越权风险隔离 | Client（CLI+Web）→ Backend（HTTP+SQLite）→ Pi Runner（fork 子进程 agent-loop）→ Workspace（run 隔离目录），Backend 不解读 prompt、Runner 不连 DB |
+| **四层架构** | 决策进程与真相源解耦、越权风险隔离 | Client（CLI+Web）→ Backend（HTTP+SQLite）→ Runner（fork 子进程 agent-loop）→ Workspace（run 隔离目录），Backend 不解读 prompt、Runner 不连 DB |
 | **库存数据 Tool Hub** | 多系统库存口径不一、缺货判断失真 | 统一 BI/ERP/库存/销量/促销 Adapter 为 JSON Schema，注册为按 SKU 授权的 MCP Tool，Session 工具面裁剪 |
 | **补货 Workflow Runtime** | 人工补货凭经验、决策不可追溯 | Monitor→Detect→Investigate→Decide→Act→Review 六阶段可恢复 Turn，同 SKU 串行，审批后从 Checkpoint 恢复，幂等防重复执行 |
 | **定时巡检调度器** | 人工巡检遗漏、市场突变反应慢 | Cron 双层模型：`next_run` 游标兼乐观锁、`occurrence_key` 幂等物化；重启后周期任务 missed 不补跑、一次性任务必达 |
@@ -21,7 +21,7 @@
 | **补货 Case Memory** | 历史处置经验不复用 | 案例三段式 Schema，revision CAS 防并发覆盖，FTS5 trigram 按 SKU+时间窗召回 |
 | **补货 Trace Eval** | 预测与决策不可复盘 | 六类故障样例，StreamEvent 记录 Tool Calling 与证据链，Regression Gate 三项断言阻断回归 |
 
-## 架构（MiniClaw 四层映射）
+## 架构（四层进程模型）
 
 ```mermaid
 flowchart TB
@@ -36,7 +36,7 @@ flowchart TB
     ACL2[ACL 权限<br/>两维正交]
   end
 
-  subgraph L3["Pi Runner 运行层（决策执行）"]
+  subgraph L3["Runner 运行层（决策执行）"]
     LOOP[agent-loop<br/>六阶段 Turn]
   end
 
@@ -58,7 +58,7 @@ flowchart TB
 
 1. **Client（客户端层）**：CLI 三个命令 + 静态 Web 面板，只做交互与展示，不碰数据。
 2. **Backend（后端层）**：HTTP + SQLite 真相源 + Runner 管理。**只落账、取数、审批，不解读 prompt、不跑工具**。
-3. **Pi Runner（运行层）**：`fork` 子进程里的 agent-loop，跑决策 Turn。**不连数据库**——取数通过 `tool_call` IPC 向 Backend 请求（带 ACL）。
+3. **Runner（运行层）**：`fork` 子进程里的 agent-loop，跑决策 Turn。**不连数据库**——取数通过 `tool_call` IPC 向 Backend 请求（带 ACL）。
 4. **Workspace（工作区层）**：每次 run 一个隔离目录，路径守卫防目录穿越。
 
 > `Backend ↔ Runner` 的 stdio JSON-RPC（request / response / notification）是 **MCP 协议的同构原型**：Runner 取数只能走带授权的 tool_call，与直连数据库的旧单体设计根本不同。
@@ -116,14 +116,14 @@ npm run serve
 src/
 ├── client/             # Client 客户端层：Web 面板 + serve 命令
 ├── backend/            # Backend 后端层：真相源 + HTTP + Runner 管理
-│   └── protocol/       #   —— 移植 MiniClaw 协议层设计（事件/权限/IPC/存活）
+│   └── protocol/       #   —— 协议层设计（事件/权限/IPC/存活）
 │       ├── stream-event.types.ts   # 流式事件类型（24 种 StreamEventType）
 │       ├── permissions.ts          # 平台级系统权限（角色 → 默认权限）
 │       ├── ipc-send-dedup.ts       # IPC 发送去重（幂等投递）
 │       ├── liveness.ts             # Runner 存活竞态约束（超时数学关系）
 │       └── ipc-delivery.ts         # 顺序恢复 / 回执校验 / Turn 追踪
-├── runner/             # Pi Runner 运行层：fork 子进程 agent-loop
-│   ├── spawn.ts        #   child_process.fork + stdio JSON-RPC（Docker 容器 runner 的载体适配）
+├── runner/             # Runner 运行层：fork 子进程 agent-loop
+│   ├── spawn.ts        #   child_process.fork + stdio JSON-RPC（Runner 子进程管理）
 │   ├── agent-loop.ts   #   六阶段 Turn 决策循环
 │   ├── worker.ts       #   子进程入口
 │   └── protocol.ts     #   request/response/notification 编解码

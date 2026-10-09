@@ -1,5 +1,5 @@
 /**
- * Runner stdio JSON-RPC 协议（Backend ↔ Pi Runner 的进程间契约）。
+ * Runner stdio JSON-RPC 协议（Backend ↔ Runner 的进程间契约）。
  *
  * 这是 MCP（Model Context Protocol）的最小原型：Backend 与 Runner 是两个进程，
  * 通过 stdin/stdout 用「换行分隔的 JSON 消息」通信，语义与 MCP 的
@@ -7,8 +7,8 @@
  *   - request  + id  → 期待对方 response（id 回显）
  *   - event    → 单向通知（无 id，无需回执）
  *
- * 与 MiniClaw「宿主 ↔ 容器 / Pi Runner」的 IPC 协议同构，但载体从 Docker
- * 容器降级为 child_process.fork + stdio，保住了「HR 五分钟 npm test 单机跑通」
+ * 与「宿主 ↔ Runner」的 IPC 协议同构，载体采用
+ * child_process.fork + stdio，保住了「HR 五分钟 npm test 单机跑通」
  * 的硬约束（不需要 Docker）。
  *
  * 进程分工：

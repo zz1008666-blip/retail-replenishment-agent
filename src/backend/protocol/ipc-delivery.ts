@@ -1,8 +1,8 @@
 /**
- * IPC 投递与回执（参考 MiniClaw 协议层设计，
+ * IPC 投递与回执（参考事件驱动协议设计，
  * 载体从「文件队列」适配为「stdio 消息队列 + 工作区落盘」）。
  *
- * 保留 MiniClaw 的三个关键机制：
+ * 保留协议设计的三个关键机制：
  *   1. 顺序恢复：回执游标（timestamp + id）是权威顺序，文件名顺序不可靠；
  *   2. 回执校验：parseIpcReceipt 严格校验 deliveryId/chatJid/cursor；
  *   3. Turn 追踪：IpcTurnDeliveryTracker 把「接受的输入 turn」与「健康结果」一一配对，

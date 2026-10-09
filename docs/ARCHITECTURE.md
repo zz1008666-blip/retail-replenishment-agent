@@ -8,15 +8,15 @@
 2. **有边界**：AI 有建议权，人保留审批权与参数校准权；高风险动作不能越过人工授权。
 3. **可复盘**：决策过程用 Trace 记录，质量用故障样例 + 回归门禁守住，改动不能偷偷变差。
 
-## 2. 四层进程架构（MiniClaw 映射）
+## 2. 四层进程架构
 
 这是项目最外层的骨架，决定「哪些代码在哪个进程、谁能碰什么」：
 
-| 层 | 对应 MiniClaw | 本项目的载体 | 进程内职责 | 明确的「不做」 |
+| 层 | 设计原型 | 本项目的载体 | 进程内职责 | 明确的「不做」 |
 |---|---|---|---|---|
 | **Client** | 客户端 | CLI（eval/run/serve）+ 静态 Web 面板 | 交互与展示 | 不碰数据，不碰决策 |
 | **Backend** | 后端 | HTTP（`node:http`）+ SQLite 真相源 + Runner 管理 | 落账、取数、审批 | **不解读 prompt、不跑工具** |
-| **Pi Runner** | Pi Runner | `child_process.fork` 子进程 + stdio JSON-RPC | agent-loop 跑六阶段 Turn | **不连数据库**，取数走 tool_call IPC |
+| **Runner** | Runner | `child_process.fork` 子进程 + stdio JSON-RPC | agent-loop 跑六阶段 Turn | **不连数据库**，取数走 tool_call IPC |
 | **Workspace** | Workspace | 每次 run 一个隔离目录 | 调查产物落盘隔离 | 不做进程边界外的事 |
 
 ### 为什么这样分层（代价与收益）

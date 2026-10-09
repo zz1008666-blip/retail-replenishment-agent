@@ -1,14 +1,14 @@
 /**
  * Backend 侧的 Runner 客户端（spawn / fork 管理）。
  *
- * 它扮演 MiniClaw 里「宿主」的角色：
+ * 它扮演「宿主」的角色：
  *   - fork 一个 runner worker 子进程
  *   - 向子进程发 inspect 请求，收取 decision 与 StreamEvent
  *   - 子进程发来 tool_call 请求时，转交 resolveTool（走 ToolRegistry 的 ACL）
  *   - 用 liveness 的时间预算做看门狗：空闲回收停掉 warm runner、超时杀掉进程
  *
- * 「载体适配」：MiniClaw 用 Docker 容器隔离 Runner，这里降级为 fork 子进程，
- * 隔离边界从「容器文件系统」退化为「进程 + 无 DB 引用」，满足单机零依赖。
+ * 「载体」：用 fork 子进程隔离 Runner，
+ * 隔离边界为「进程 + 无 DB 引用」，满足单机零依赖。
  */
 import { fork, type ChildProcess } from 'node:child_process';
 import path from 'node:path';

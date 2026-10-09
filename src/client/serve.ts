@@ -82,7 +82,7 @@ export async function cmdServe(port = 4610): Promise<{ url: string }> {
   console.log('四层架构已启动：' + handle.url);
   console.log('  Client    → Web 面板（浏览器打开 ' + handle.url + '）');
   console.log('  Backend   → HTTP + SQLite 真相源');
-  console.log('  Pi Runner → fork 子进程 agent-loop（stdio JSON-RPC）');
+  console.log('  Runner → fork 子进程 agent-loop（stdio JSON-RPC）');
   console.log('  Workspace → workspaces/<runId> 隔离目录');
   console.log('\n按 Ctrl+C 退出。');
 

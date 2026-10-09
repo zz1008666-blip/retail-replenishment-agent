@@ -1,7 +1,7 @@
 /**
  * Backend 层：真相源 + Runner 管理 + 对外接口。
  *
- * 对应 MiniClaw 的 Backend（Hono）：
+ * 对应分层架构的 Backend（Hono）：
  *   - 持有 SQLite 真相源（经 App 装配的 db / catalog / caseStore / acl / tools）
  *   - 不做「解读 prompt」「跑工具」——这些在 Runner 子进程里做
  *   - 只负责：派生/管理工作区 → fork Runner → 回应 Runner 的取数请求（带 ACL）→

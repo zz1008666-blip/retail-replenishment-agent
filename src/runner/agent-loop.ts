@@ -1,7 +1,7 @@
 /**
  * Runner 决策环（agent-loop）：在子进程里执行 Monitor → Detect → Investigate → Decide。
  *
- * 关键约束（对应 MiniClaw 的 Pi Runner 职责）：
+ * 关键约束（对应四层架构的 Runner 职责）：
  *   - 本进程不连数据库、不持有任何业务数据。
  *   - 想拿数据只能通过 invokeTool 向 Backend 发 tool_call 请求（带 ACL）。
  *   - 决策内核复用 src/agent/decision.ts（detect/decide），100% 离线可复现。

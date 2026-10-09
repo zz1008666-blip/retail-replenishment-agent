@@ -1,7 +1,7 @@
 /**
  * Backend 的 HTTP 服务：REST API + Web 面板。
  *
- * 对应 MiniClaw 的 Hono 服务入口，但零依赖手搓（node:http）。
+ * 对应分层架构的 Hono 服务入口，但零依赖手搓（node:http）。
  * 提供四个端点：
  *   GET  /health                → 四层架构存活探针
  *   GET  /api/v1/runs           → 已产生的巡检记录摘要
