@@ -17,6 +17,7 @@
     "test:unit": "npm run build && node --disable-warning=ExperimentalWarning --test \"dist/test/unit/**/*.test.js\"",
     "eval": "npm run build && node --disable-warning=ExperimentalWarning dist/src/cli.js eval",
     "run": "npm run build && node --disable-warning=ExperimentalWarning dist/src/cli.js run",
+    "serve": "npm run build && node --disable-warning=ExperimentalWarning dist/src/cli.js serve",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "devDependencies": {
