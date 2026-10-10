@@ -146,7 +146,3 @@ test/
 ## 更多文档
 
 - [架构与设计取舍](docs/ARCHITECTURE.md)
-
-## License
-
-MIT
